@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: proj4-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: proj4-app
+  template:
+    metadata:
+      labels:
+        app: proj4-app
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: "/metrics"
+        prometheus.io/port: "5000"
+    spec:
+      imagePullSecrets:
+        - name: ghcr-creds
+      containers:
+      - name: app
+        image: ghcr.io/bynflow/proj4-app:sha-94dfcb5
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 5000
