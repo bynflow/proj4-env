@@ -8,4 +8,4 @@ resources:
 
 images:
   - name: ghcr.io/bynflow/proj4-app
-    newTag: PLACEHOLDER
+    newTag: sha-a0b38f8
