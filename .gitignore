@@ -14,3 +14,7 @@ __pycache__/
 .coverage
 htmlcov/
 .kube/
+
+# Local TLS test files
+*.key
+*.crt

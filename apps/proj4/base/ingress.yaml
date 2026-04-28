@@ -3,8 +3,13 @@ kind: Ingress
 metadata:
   name: proj4-app
 spec:
+  tls:
+    - hosts:
+        - proj4.local
+      secretName: proj4-tls
   rules:
-    - http:
+    - host: proj4.local
+      http:
         paths:
           - path: /
             pathType: Prefix
