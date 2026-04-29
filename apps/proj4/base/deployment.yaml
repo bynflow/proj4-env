@@ -16,6 +16,7 @@ spec:
         prometheus.io/path: "/metrics"
         prometheus.io/port: "5000"
     spec:
+      serviceAccountName: proj4-app-sa
       imagePullSecrets:
         - name: ghcr-creds
       containers:
