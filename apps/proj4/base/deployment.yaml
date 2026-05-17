@@ -23,5 +23,13 @@ spec:
       - name: app
         image: ghcr.io/bynflow/proj4-app:sha-94dfcb5
         imagePullPolicy: Always
+
         ports:
-        - containerPort: 5000
+          - containerPort: 5000
+
+        env:
+          - name: DEMO_API_KEY
+            valueFrom:
+              secretKeyRef:
+                name: proj4-app-secret
+                key: DEMO_API_KEY
