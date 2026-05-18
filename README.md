@@ -1,68 +1,176 @@
 # proj4-env
 
-Environment repository for Project 4.
+GitOps environment repository for Project 4: **GitOps Environment Governance & Production Hardening**.
 
-This repository contains the Kubernetes environment configuration for the application deployed through GitOps workflows.
+This repository contains the Kubernetes environment layer for a multi-repository DevOps platform.
 
-The application source code is intentionally separated into a dedicated application repository:
+The application code, tests, CI pipeline, Docker build, GHCR publishing, Trivy scanning, dependency audit and Prometheus instrumentation are intentionally separated into the application repository:
 
-* proj4-app
+* [`proj4-app`](https://github.com/bynflow/proj4-app)
 
-This repository owns the operational and deployment layer of the system.
+This repository owns the **deployment state**, **environment governance**, and **Kubernetes hardening layer**.
 
 ---
 
-## Responsibilities
+## Project role
 
-This repository contains:
+`proj4-env` is responsible for:
 
 * Kubernetes manifests
-* Kustomize overlays
-* namespace structure
-* ingress configuration
+* Kustomize base and overlays
+* ArgoCD-driven GitOps deployment
+* dev / staging / prod environment separation
+* image promotion through immutable `sha-*` tags
+* Ingress configuration
 * TLS configuration
-* RBAC configuration
+* RBAC hardening
 * NetworkPolicy baseline
-* deployment governance
+* Kubernetes Secret runtime integration
+* observability-side deployment integration
+
+It does **not** own:
+
+* application source code
+* unit tests
+* Docker image build logic
+* GitHub Actions application CI
+* Python dependency scanning
+* application-level Prometheus instrumentation
+
+Those responsibilities belong to `proj4-app`.
 
 ---
 
-## GitOps architecture
+## Architecture context
 
-The system follows a multi-repository GitOps model:
+```text
+proj4-app
+   |
+   | builds and publishes immutable image
+   v
+GHCR
+   |
+   | image tag selected in env repo
+   v
+proj4-env
+   |
+   | desired state stored in Git
+   v
+ArgoCD
+   |
+   | reconciles cluster state
+   v
+Kubernetes runtime
+   |
+   | Ingress + TLS + RBAC + NetworkPolicy + Secrets
+   v
+proj4-app workload
+```
 
-* proj4-app → application source + CI
-* proj4-env → deployment state + environment governance
+The application repository produces artifacts.
+The environment repository governs where and how those artifacts run.
+
+---
+
+## GitOps model
+
+Project 4 uses a multi-repository GitOps model:
+
+| Repository  | Responsibility                                        |
+| ----------- | ----------------------------------------------------- |
+| `proj4-app` | application code, CI, Docker build, GHCR image        |
+| `proj4-env` | Kubernetes desired state, overlays, ArgoCD deployment |
 
 This separation improves:
 
-* operational clarity
 * deployment governance
+* environment isolation
+* operational clarity
 * security boundaries
-* environment lifecycle management
+* rollback and promotion control
 
 ---
 
 ## Environments
 
-Current environments:
+The repository defines three Kubernetes environments:
 
-* dev
-* staging
-* prod
+```text
+dev
+staging
+prod
+```
 
-Managed through Kustomize overlays.
+Each environment is represented through a Kustomize overlay:
+
+```text
+apps/proj4/overlays/dev
+apps/proj4/overlays/staging
+apps/proj4/overlays/prod
+```
+
+Promotion is performed by updating the immutable image tag in the corresponding overlay:
+
+```yaml
+images:
+  - name: ghcr.io/bynflow/proj4-app
+    newTag: sha-<commit>
+```
 
 ---
 
-## Security baseline
+## Repository structure
 
-Implemented hardening includes:
+```text
+proj4-env/
+├── apps/
+│   └── proj4/
+│       ├── base/
+│       │   ├── deployment.yaml
+│       │   ├── service.yaml
+│       │   ├── ingress.yaml
+│       │   ├── serviceaccount.yaml
+│       │   ├── role.yaml
+│       │   ├── rolebinding.yaml
+│       │   ├── networkpolicy.yaml
+│       │   └── kustomization.yaml
+│       └── overlays/
+│           ├── dev/
+│           ├── staging/
+│           └── prod/
+└── argocd/
+```
 
-* RBAC
-* NetworkPolicy
-* TLS ingress
-* Kubernetes Secrets baseline
+---
+
+## Security hardening baseline
+
+This repository implements a first Kubernetes hardening baseline:
+
+* dedicated ServiceAccount for the application workload
+* Role and RoleBinding for explicit RBAC
+* NetworkPolicy for controlled pod ingress traffic
+* TLS termination on Ingress
+* Kubernetes Secret injection through `secretKeyRef`
+* separation between runtime secrets and Docker image artifacts
+
+This is not a full enterprise security platform.
+It is a practical baseline showing production-oriented thinking.
+
+---
+
+## Ingress and TLS
+
+The application is exposed through Kubernetes Ingress.
+
+TLS is configured at the Ingress layer using a Kubernetes TLS Secret.
+
+Runtime validation was performed through:
+
+```bash
+curl -k https://proj4.local/health
+curl -k https://proj4.local/metrics
+```
 
 ---
 
@@ -74,27 +182,83 @@ The deployed application exposes Prometheus metrics through:
 /metrics
 ```
 
-The environment repository manages the Kubernetes-side integration required for observability workflows.
+The environment layer ensures that the workload is reachable through the Kubernetes networking path:
+
+```text
+HTTPS → Ingress → Service → Pod → /metrics
+```
+
+This validates observability through the real runtime path rather than only through local port-forwarding.
 
 ---
 
-## Repository role
+## GitOps deployment flow
 
-This repository owns:
+```text
+1. proj4-app builds an immutable image
+2. image is pushed to GHCR as sha-<commit>
+3. proj4-env overlay selects the target sha
+4. ArgoCD detects the desired state change
+5. ArgoCD reconciles the Kubernetes cluster
+6. Kubernetes runs the selected image
+7. runtime is validated through HTTPS and /metrics
+```
 
-* deployment manifests
-* Kubernetes configuration
-* environment governance
-* cluster-facing configuration
+This creates a controlled promotion model across:
 
-This repository does NOT own:
+```text
+dev → staging → prod
+```
 
-* application source code
-* unit tests
-* Docker build logic
-* CI application pipeline
+---
 
-Those responsibilities belong to:
+## Runtime validation examples
 
-* proj4-app
+Check deployed resources:
 
+```bash
+kubectl get all -n proj4-dev
+```
+
+Check deployed image:
+
+```bash
+kubectl describe pod -n proj4-dev | grep Image:
+```
+
+Check HTTPS health endpoint:
+
+```bash
+curl -k https://proj4.local/health
+```
+
+Check Prometheus metrics:
+
+```bash
+curl -k https://proj4.local/metrics | grep app_
+```
+
+---
+
+## What this repository demonstrates
+
+This repository demonstrates:
+
+* GitOps environment governance
+* multi-environment Kubernetes deployment
+* separation of application and environment concerns
+* ArgoCD reconciliation model
+* immutable image promotion
+* Kubernetes hardening baseline
+* runtime secret injection
+* Ingress + TLS exposure
+* observability through the real cluster path
+* portfolio-grade DevOps architecture design
+
+---
+
+## Related repository
+
+Application repository:
+
+* [`proj4-app`](https://github.com/bynflow/proj4-app)
