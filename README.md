@@ -1,6 +1,3 @@
-Ora incolla questo contenuto nel file.
-
-````markdown
 # proj4-env
 
 Environment repository for Project 4.
@@ -9,7 +6,7 @@ This repository contains the Kubernetes environment configuration for the applic
 
 The application source code is intentionally separated into a dedicated application repository:
 
-- proj4-app
+* proj4-app
 
 This repository owns the operational and deployment layer of the system.
 
@@ -19,14 +16,14 @@ This repository owns the operational and deployment layer of the system.
 
 This repository contains:
 
-- Kubernetes manifests
-- Kustomize overlays
-- namespace structure
-- ingress configuration
-- TLS configuration
-- RBAC configuration
-- NetworkPolicy baseline
-- deployment governance
+* Kubernetes manifests
+* Kustomize overlays
+* namespace structure
+* ingress configuration
+* TLS configuration
+* RBAC configuration
+* NetworkPolicy baseline
+* deployment governance
 
 ---
 
@@ -34,15 +31,15 @@ This repository contains:
 
 The system follows a multi-repository GitOps model:
 
-- proj4-app → application source + CI
-- proj4-env → deployment state + environment governance
+* proj4-app → application source + CI
+* proj4-env → deployment state + environment governance
 
 This separation improves:
 
-- operational clarity
-- deployment governance
-- security boundaries
-- environment lifecycle management
+* operational clarity
+* deployment governance
+* security boundaries
+* environment lifecycle management
 
 ---
 
@@ -50,9 +47,9 @@ This separation improves:
 
 Current environments:
 
-- dev
-- staging
-- prod
+* dev
+* staging
+* prod
 
 Managed through Kustomize overlays.
 
@@ -62,10 +59,10 @@ Managed through Kustomize overlays.
 
 Implemented hardening includes:
 
-- RBAC
-- NetworkPolicy
-- TLS ingress
-- Kubernetes Secrets baseline
+* RBAC
+* NetworkPolicy
+* TLS ingress
+* Kubernetes Secrets baseline
 
 ---
 
@@ -75,7 +72,7 @@ The deployed application exposes Prometheus metrics through:
 
 ```text
 /metrics
-````
+```
 
 The environment repository manages the Kubernetes-side integration required for observability workflows.
 
@@ -101,12 +98,20 @@ Those responsibilities belong to:
 
 * proj4-app
 
-````
+---
 
-Poi esegui:
+## Commands
+
+```bash
+nano README.md
+```
+
+Replace the entire current README content with this version.
+
+Then execute:
 
 ```bash
 git add README.md
-git commit -m "docs: add proj4-env README"
+git commit -m "docs: fix proj4-env README content"
 git push origin main
-````
+```
