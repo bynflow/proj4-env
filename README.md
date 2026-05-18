@@ -98,20 +98,3 @@ Those responsibilities belong to:
 
 * proj4-app
 
----
-
-## Commands
-
-```bash
-nano README.md
-```
-
-Replace the entire current README content with this version.
-
-Then execute:
-
-```bash
-git add README.md
-git commit -m "docs: fix proj4-env README content"
-git push origin main
-```
