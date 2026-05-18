@@ -1,4 +1,4 @@
-# proj4-env
+# gitops-observability-platform-env
 
 GitOps environment repository for Project 4: **GitOps Environment Governance & Production Hardening**.
 
@@ -6,7 +6,7 @@ This repository contains the Kubernetes environment layer for a multi-repository
 
 The application code, tests, CI pipeline, Docker build, GHCR publishing, Trivy scanning, dependency audit and Prometheus instrumentation are intentionally separated into the application repository:
 
-* [`proj4-app`](https://github.com/bynflow/proj4-app)
+* [`gitops-observability-platform-app`](https://github.com/bynflow/gitops-observability-platform-app)
 
 This repository owns the **deployment state**, **environment governance**, and **Kubernetes hardening layer**.
 
@@ -14,7 +14,7 @@ This repository owns the **deployment state**, **environment governance**, and *
 
 ## Project role
 
-`proj4-env` is responsible for:
+`gitops-observability-platform-env` is responsible for:
 
 * Kubernetes manifests
 * Kustomize base and overlays
@@ -37,14 +37,14 @@ It does **not** own:
 * Python dependency scanning
 * application-level Prometheus instrumentation
 
-Those responsibilities belong to `proj4-app`.
+Those responsibilities belong to `gitops-observability-platform-app`.
 
 ---
 
 ## Architecture context
 
 ```text
-proj4-app
+gitops-observability-platform-app
    |
    | builds and publishes immutable image
    v
@@ -52,7 +52,7 @@ GHCR
    |
    | image tag selected in env repo
    v
-proj4-env
+gitops-observability-platform-env
    |
    | desired state stored in Git
    v
@@ -64,7 +64,7 @@ Kubernetes runtime
    |
    | Ingress + TLS + RBAC + NetworkPolicy + Secrets
    v
-proj4-app workload
+gitops-observability-platform-app workload
 ```
 
 The application repository produces artifacts.
@@ -78,8 +78,8 @@ Project 4 uses a multi-repository GitOps model:
 
 | Repository  | Responsibility                                        |
 | ----------- | ----------------------------------------------------- |
-| `proj4-app` | application code, CI, Docker build, GHCR image        |
-| `proj4-env` | Kubernetes desired state, overlays, ArgoCD deployment |
+| `gitops-observability-platform-app` | application code, CI, Docker build, GHCR image        |
+| `gitops-observability-platform-env` | Kubernetes desired state, overlays, ArgoCD deployment |
 
 This separation improves:
 
@@ -113,7 +113,7 @@ Promotion is performed by updating the immutable image tag in the corresponding 
 
 ```yaml
 images:
-  - name: ghcr.io/bynflow/proj4-app
+  - name: ghcr.io/bynflow/gitops-observability-platform-app
     newTag: sha-<commit>
 ```
 
@@ -122,7 +122,7 @@ images:
 ## Repository structure
 
 ```text
-proj4-env/
+gitops-observability-platform-env/
 ├── apps/
 │   └── proj4/
 │       ├── base/
@@ -195,9 +195,9 @@ This validates observability through the real runtime path rather than only thro
 ## GitOps deployment flow
 
 ```text
-1. proj4-app builds an immutable image
+1. gitops-observability-platform-app builds an immutable image
 2. image is pushed to GHCR as sha-<commit>
-3. proj4-env overlay selects the target sha
+3. gitops-observability-platform-env overlay selects the target sha
 4. ArgoCD detects the desired state change
 5. ArgoCD reconciles the Kubernetes cluster
 6. Kubernetes runs the selected image
@@ -261,4 +261,4 @@ This repository demonstrates:
 
 Application repository:
 
-* [`proj4-app`](https://github.com/bynflow/proj4-app)
+* [`gitops-observability-platform-app`](https://github.com/bynflow/gitops-observability-platform-app)
