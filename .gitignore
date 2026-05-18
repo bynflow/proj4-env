@@ -18,3 +18,4 @@ htmlcov/
 # Local TLS test files
 *.key
 *.crt
+requirements.lock.txt
